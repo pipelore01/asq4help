@@ -53,11 +53,25 @@ states: npt.NDArray = df[df["School Country"] == country]["School State"].unique
 states.sort()
 state = st.sidebar.selectbox("Select State/Province", states)
 
+
+cities: npt.NDArray = df[
+    (df["School Country"] == country) & 
+    (df["School State"] == state)
+]["School City"].unique()
+cities.sort()
+city = st.sidebar.selectbox("Select City", cities)
+
+
 schools: npt.NDArray = df[
-    (df["School Country"] == country) & (df["School State"] == state)
+    (df["School Country"] == country) & 
+    (df["School State"] == state) &
+    (df["School City"] == city)
 ]["School Name"].unique()
 schools.sort()
 school = st.sidebar.selectbox("Select School", schools)
+
+
+
 
 
 helpers = df[
@@ -72,7 +86,7 @@ helpers.reset_index(inplace=True)
 st.divider()
 st.markdown(
     f"""
-        You can contact any of the following for help about {school}.
+        You can contact any of the following for help about {school}, {city}, {state}, {country}.
     """
 )
 
