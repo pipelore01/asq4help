@@ -20,8 +20,7 @@ st.set_page_config(
 
 st.write("# Welcome to Asq4help! 👋")
 
-st.sidebar.success("Use the controls to filter.")
-
+# st.success("Use the controls to filter.")
 
 
 st.markdown(
@@ -39,39 +38,38 @@ st.markdown(
     - You do not ask for financial assistance from volunteers. In the same vein, please, do not give money to anyone
     who asks for it. No volunteer on this platform will ask you for money.
 """,
-    unsafe_allow_html = True
+    unsafe_allow_html=True,
 )
 
 
 df = pd.read_excel(url, sheet_name=helpers_table)
 
+
+st.markdown("""## Use the controls to filter""")
+
 countries: npt.NDArray = pd.unique(df["School Country"])
 countries.sort()
-country = st.sidebar.selectbox("Select A Country", countries)
+country = st.selectbox("Select A Country", countries)
 
 states: npt.NDArray = df[df["School Country"] == country]["School State"].unique()
 states.sort()
-state = st.sidebar.selectbox("Select State/Province", states)
+state = st.selectbox("Select State/Province", states)
 
 
 cities: npt.NDArray = df[
-    (df["School Country"] == country) & 
-    (df["School State"] == state)
+    (df["School Country"] == country) & (df["School State"] == state)
 ]["School City"].unique()
 cities.sort()
-city = st.sidebar.selectbox("Select City", cities)
+city = st.selectbox("Select City", cities)
 
 
 schools: npt.NDArray = df[
-    (df["School Country"] == country) & 
-    (df["School State"] == state) &
-    (df["School City"] == city)
+    (df["School Country"] == country)
+    & (df["School State"] == state)
+    & (df["School City"] == city)
 ]["School Name"].unique()
 schools.sort()
-school = st.sidebar.selectbox("Select School", schools)
-
-
-
+school = st.selectbox("Select School", schools)
 
 
 helpers = df[
@@ -97,9 +95,10 @@ for i in range(len(helpers)):
     twitter = helpers.loc[i, "Twitter"]
     linkedin = helpers.loc[i, "LinkedIn"]
     reviewer = helpers.loc[i, "Reviewer"]
+    reviewer_id = helpers.loc[i, "Reviewer ID"]
 
     base_link = os.getenv("SUBSCRIPTION_BASE")
-    subscription_link = f"{base_link}{name}"
+    subscription_link = f"{base_link}{reviewer_id}"
 
     with st.container():
         col, _ = st.columns(2)
@@ -144,4 +143,16 @@ for i in range(len(helpers)):
         unsafe_allow_html=True,
     )
 
+import time
+from streamlit_extras.stateful_chat import chat, add_message
 
+with chat(key="my_chat"):
+    if prompt := st.chat_input():
+        add_message("user", prompt, avatar="🧑‍💻")
+
+        def stream_joshua():
+            for word in prompt.split():
+                yield word + " "
+                time.sleep(0.15)
+
+        add_message("assistant", "Echo: ", stream_joshua, avatar="🦜")
